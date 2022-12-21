@@ -1,37 +1,54 @@
 import { galleryItems } from './gallery-items.js';
 // Change code below this line
 
-console.log(galleryItems);
-const galleryContainerEl = document.querySelector(".gallery");
-const imagesMarkup = createItemsMarkup(galleryItems);
-galleryContainerEl.insertAdjacentHTML("beforeend", imagesMarkup);
+const galleryBox = document.querySelector('.gallery');
+const galleryMarkap = createGaleryMarkup(galleryItems);
 
-function createItemsMarkup(item) {
+galleryBox.insertAdjacentHTML('beforeend', galleryMarkap);
+
+galleryBox.addEventListener('click', onImageOfGalleryClick);
+
+function createGaleryMarkup(galleryItems) {
   return galleryItems
-    .map(({ preview, original, description }) => {
-      return `<div class="gallery__item">
-      <a class="gallery__link" href="${original.value}">
-        <img
-          class="gallery__image"
-          src="${preview}"
-          data-source="${original}"
-          alt="${description}"
-        />
-      </a>
-    </div>`;
-    })
-    .join("");
+    .map(
+      image => `
+<div class="gallery__item">
+  <a class="gallery__link" href="large-image.jpg">
+    <img
+      class="gallery__image"
+      src="${image.preview}"
+      data-source="${image.original}" 
+      alt="${image.description}"
+    />
+  </a>
+</div>
+`
+    )
+    .join('');
 }
-const onContainerClick = (e) => {
-  e.preventDefault();
 
-  if (e.target.classList.contains("gallery")) return;
-    const source = e.target.dataset.source;
-    
-  const instance = basicLightbox.create(`
-    <img src="${source}"width="800" height="600">`);
+function onImageOfGalleryClick(evt) {
+  evt.preventDefault();
+  if (!evt.target.classList.contains('gallery__image')) {
+    return;
+  }
+  const originalImage = evt.target.dataset.source;
+  const options = {
+    onShow: () => {
+      window.addEventListener('keydown', onKeyEscpPress);
+    },
+    onClose: () => {
+      window.removeEventListener('keydown', onKeyEscpPress);
+    },
+  };
 
+  const instance = basicLightbox.create(`<img src="${originalImage}"/>`, options);
   instance.show();
-};
 
-galleryContainerEl.addEventListener("click", onContainerClick);
+  function onKeyEscpPress(evt) {
+    if (evt.code !== 'Escape') {
+      return;
+    }
+    instance.close();
+  }
+}
